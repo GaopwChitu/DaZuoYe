@@ -269,8 +269,11 @@ export default {
       })
     },
 
-    // ==================== 新增：删除药品 ====================
+    // ==================== 删除药品 ====================
     async deleteDrug(id) {
+      if (this.role !== '管理员') {
+        return this.$message.warning('无权限执行此操作')
+      }
       this.$confirm('确定要删除该药品吗？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
