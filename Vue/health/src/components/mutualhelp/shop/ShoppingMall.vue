@@ -253,7 +253,7 @@ export default {
             number: item.number,
             orderPrice: (item.goodsPrice * 1) * (item.number * 1),
             orderNo: "SP" + Date.now() + Math.floor(Math.random() * 1000),
-            orderStatus: "进行中"
+            orderStatus: "1"
           }
           await this.$http.post("/order/insertOrder", orderInfo)
         }

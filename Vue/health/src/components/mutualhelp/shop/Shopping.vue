@@ -47,12 +47,27 @@
         <el-table-column label="订单数量" prop="orderNumber" align="center"></el-table-column>
         <el-table-column label="订单状态" prop="orderStatus" align="center"></el-table-column>
         <el-table-column label="创建时间" prop="createTime" align="center" min-width="100px" sortable></el-table-column>
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作" align="center" width="220">
           <template v-slot="scope">
-            <el-button type="success" size="mini" @click="updateStatus(scope.row.orderNo, 0)">配送完成</el-button>
-            <!--删除-->
-            <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteOrder(scope.row.id)"
-              v-show="role == '管理员'"></el-button>
+            <!-- 进行中的订单(status=1)：显示配送完成 + 取消按钮 -->
+            <template v-if="scope.row.orderStatusCode === '1'">
+              <el-button type="success" size="mini" @click="updateStatus(scope.row.orderNo, 0)">配送完成</el-button>
+              <el-button type="warning" size="mini" @click="cancelOrder(scope.row)">取消订单</el-button>
+            </template>
+            <!-- 已完成的订单(status=0)：显示已配送标签 + 删除按钮 -->
+            <template v-if="scope.row.orderStatusCode === '0'">
+              <el-tag type="success" style="margin-right: 4px">已配送</el-tag>
+              <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteOrder(scope.row.id)"
+                v-if="role === '管理员' || scope.row.createId === currentUserId">删除
+              </el-button>
+            </template>
+            <!-- 已取消的订单(status=2)：显示已取消标签 + 删除按钮 -->
+            <template v-if="scope.row.orderStatusCode === '2'">
+              <el-tag type="info" style="margin-right: 4px">已取消</el-tag>
+              <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteOrder(scope.row.id)"
+                v-if="role === '管理员' || scope.row.createId === currentUserId">删除
+              </el-button>
+            </template>
           </template>
         </el-table-column>
       </el-table>
@@ -77,13 +92,16 @@ export default {
         pageSize: 10
       },
       role: '',
+      currentUserId: '',
       total: 0,
       shopList: [],
     }
   },
   created() {
+    const user = JSON.parse(window.sessionStorage.getItem("user"))
+    this.role = user.role;
+    this.currentUserId = user.id;
     this.getOrderList()
-    this.role = (JSON.parse(window.sessionStorage.getItem("user"))).role;
   },
   methods: {
     async updateStatus(orderNo, orderStatus) {
@@ -95,7 +113,9 @@ export default {
       return this.$message.success("配送成功！！！")
     },
     async getOrderList() {
-      this.queryInfo.userId = (JSON.parse(window.sessionStorage.getItem("user"))).id
+      const user = JSON.parse(window.sessionStorage.getItem("user"))
+      this.queryInfo.userId = user.id
+      this.queryInfo.role = this.role
       const { data: res } = await this.$http.get("/order/list", { params: this.queryInfo })
       this.shopList = res
       if (this.shopList.length > 0) {
@@ -104,14 +124,15 @@ export default {
       for (let i = 0; i < this.shopList.length; i++) {
         this.shopList[i].tag = await this.getCustomer(this.shopList[i].orderNo)
         this.shopList[i].createTime = this.$moment(this.shopList[i].createTime).utc().format('YYYY/MM/DD HH:mm:ss')
+        // 保存原始状态码供模板逻辑使用
+        this.$set(this.shopList[i], 'orderStatusCode', this.shopList[i].orderStatus)
         if (this.shopList[i].orderStatus === '0') {
           this.shopList[i].orderStatus = '完成'
         } else if (this.shopList[i].orderStatus === '1') {
           this.shopList[i].orderStatus = '进行中'
-        } else {
-          this.shopList[i].orderStatus = '废弃'
+        } else if (this.shopList[i].orderStatus === '2') {
+          this.shopList[i].orderStatus = '已取消'
         }
-        //this.shopList[i].imgUrl = require('@/' + this.shopList[i].imgUrl)
       }
     },
     async getCustomer(orderNo) {
@@ -149,6 +170,28 @@ export default {
       await this.getOrderList()
       this.$message.success("删除成功！！")
     },
+    // 取消订单
+    async cancelOrder(row) {
+      // 权限校验：非管理员只能取消自己的订单
+      if (this.role !== '管理员' && row.createId !== this.currentUserId) {
+        return this.$message.error("只能取消自己的订单！")
+      }
+      const confirmResult = await this.$confirm('确定要取消该订单吗？', '提示', {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: 'warning'
+      }).catch(err => err)
+      if (confirmResult !== 'confirm') {
+        return this.$message.info("已取消")
+      }
+      const { data: res } = await this.$http.post("/order/updateStatus?orderNo=" + row.orderNo + "&orderStatus=2")
+      if (res !== "success") {
+        return this.$message.error("取消失败！！！")
+      }
+      await this.getOrderList()
+      return this.$message.success("订单已取消")
+    },
+
     async deleteCustomer(item) {
       if (this.role != '管理员') {
         return this.$message.error("权限不够，不能操作！！！")

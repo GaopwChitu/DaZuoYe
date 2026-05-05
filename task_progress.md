@@ -1,0 +1,7 @@
+- [x] Analyze current code and identify issues
+- [x] Fix Order.java - add role field for permission control
+- [x] Fix OrderServiceImpl.java - set default orderStatus = "1" when inserting new orders
+- [x] Fix OrderMapping.xml - select createId, handle admin/role in getOrderList
+- [x] Fix ShoppingMall.vue - send orderStatus "1" instead of "进行中" text
+- [x] Fix Shopping.vue - pass role to backend, use createId, fix status logic
+- [x] Verify all changes are consistent
