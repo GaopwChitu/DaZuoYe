@@ -61,12 +61,21 @@
         <!--        自定义插槽-->
         <el-table-column label="操作" align="center">
           <template v-slot="scope">
-            <!--修改-->
-            <el-button type="primary" icon="el-icon-edit" size="mini" v-if="scope.row.businessType === '预约挂号'"
+            <!-- 编辑 -->
+            <el-button type="primary" icon="el-icon-edit" size="mini" v-show="scope.row.businessType === '预约挂号'"
               @click="showMedicalInfo(scope.row.businessNo, scope.row.businessStatus)"></el-button>
-            <el-button type="success" size="mini" @click="onAbandon(scope.row.businessNo, 0)"
-              v-else-if="role == '用户'">配送完成</el-button>
-            <el-button type="warning" size="mini" @click="onAbandon(scope.row.businessNo, 2)" v-else>废</el-button>
+
+            <!-- 用户：完成 -->
+            <el-button type="success" size="mini" v-show="role === '用户' && scope.row.businessType !== '预约挂号'"
+              @click="onAbandon(scope.row.businessNo, 0)" :disabled="scope.row.businessStatus !== '进行中'">
+              配送完成
+            </el-button>
+
+            <!-- 废按钮（独立存在） -->
+            <el-button type="warning" size="mini" disabled v-show="scope.row.businessType !== '预约挂号'"
+              @click="onAbandon(scope.row.businessNo, 2)" :disabled="scope.row.businessStatus === '废弃'">
+              废 弃
+            </el-button>
             <!--删除-->
             <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteMedical(scope.row.id)">
             </el-button>
@@ -118,8 +127,10 @@
       <!-- 内容底部区域    -->
       <span slot="footer" class="dialog-footer" v-show="medicalInfoForm.businessStatus !== '完成'">
         <el-button @click="isMedical = false">取 消</el-button>
-        <el-button type="danger" @click="onAbandon(medicalInfoForm.appointNo, 2)">废 弃</el-button>
-        <el-button type="success" @click="onAbandon(medicalInfoForm.appointNo, 0)" v-if="this.role === '管理员'">完
+        <el-button type="danger" :disabled="medicalInfoForm.businessStatus === '废弃'"
+          @click="onAbandon(medicalInfoForm.appointNo, 2)">废 弃</el-button>
+        <el-button type="success" :disabled="medicalInfoForm.businessStatus === '完成'"
+          @click="onAbandon(medicalInfoForm.appointNo, 0)" v-if="this.role === '管理员'">完
           结</el-button>
         <el-button type="success" @click="onClickSave" v-else>保 存</el-button>
       </span>
