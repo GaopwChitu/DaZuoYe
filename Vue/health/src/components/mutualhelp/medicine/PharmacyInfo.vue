@@ -44,9 +44,10 @@
             </el-table-column>
 
             <!-- 新增：删除药品按钮 -->
-            <el-table-column label="操作" align="center" v-if="role == '管理员'">
+            <el-table-column label="操作" align="center">
               <template v-slot="scope">
-                <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteDrug(scope.row.id)">删除
+                <el-button v-show="role == '管理员'" type="danger" icon="el-icon-delete" size="mini"
+                  @click="deleteDrug(scope.row.id)">删除
                 </el-button>
               </template>
             </el-table-column>
@@ -162,7 +163,6 @@ export default {
   },
   created() {
     this.role = JSON.parse(window.sessionStorage.getItem("user"))?.role || ''
-    console.log("role: ", this.role)
     this.getDrugTypeList()
     this.getDrugList("感冒药")
   },
@@ -271,18 +271,19 @@ export default {
 
     // ==================== 删除药品 ====================
     async deleteDrug(id) {
-      this.$confirm('确定要删除该药品吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(async () => {
-        const { data: res } = await this.$http.delete(`/medical/deleteDrug/${id}`)
-        if (res !== "success") return this.$message.error("删除失败")
-        this.$message.success("删除成功")
-        this.getDrugList(this.editableTabsValue)
-      }).catch(() => {
-        this.$message.info('已取消删除')
-      })
+      try {
+        await this.$confirm('确定要删除该药品吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
+      } catch {
+        return this.$message.info('已取消删除')
+      }
+      const { data: res } = await this.$http.delete(`/medical/deleteDrug/${id}`)
+      if (res !== "success") return this.$message.error("删除失败")
+      this.$message.success("删除成功")
+      this.getDrugList(this.editableTabsValue)
     },
 
     // 图片上传
