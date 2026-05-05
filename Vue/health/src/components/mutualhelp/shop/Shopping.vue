@@ -58,14 +58,14 @@
             <template v-if="scope.row.orderStatusCode === '0'">
               <el-tag type="success" style="margin-right: 4px">已配送</el-tag>
               <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteOrder(scope.row.id)"
-                v-if="role === '管理员' || scope.row.createId === currentUserId">删除
+                v-if="role === '管理员' || String(scope.row.createId) === String(currentUserId)">删除
               </el-button>
             </template>
             <!-- 已取消的订单(status=2)：显示已取消标签 + 删除按钮 -->
             <template v-if="scope.row.orderStatusCode === '2'">
               <el-tag type="info" style="margin-right: 4px">已取消</el-tag>
               <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteOrder(scope.row.id)"
-                v-if="role === '管理员' || scope.row.createId === currentUserId">删除
+                v-if="role === '管理员' || String(scope.row.createId) === String(currentUserId)">删除
               </el-button>
             </template>
           </template>
@@ -173,7 +173,7 @@ export default {
     // 取消订单
     async cancelOrder(row) {
       // 权限校验：非管理员只能取消自己的订单
-      if (this.role !== '管理员' && row.createId !== this.currentUserId) {
+      if (this.role !== '管理员' && String(row.createId) !== String(this.currentUserId)) {
         return this.$message.error("只能取消自己的订单！")
       }
       const confirmResult = await this.$confirm('确定要取消该订单吗？', '提示', {
