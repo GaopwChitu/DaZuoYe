@@ -66,7 +66,7 @@
             <el-input v-model="scope.row.foodNumber"></el-input>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" v-show="role == '管理员'">
+        <el-table-column label="操作" align="center" v-if="role == '管理员'">
           <template v-slot="scope">
             <!--删除-->
             <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteById(scope.row.id)">
@@ -297,9 +297,6 @@ export default {
       }
     },
     async deleteById(id) {
-      if (this.role !== '管理员') {
-        return this.$message.warning('无权限执行此操作')
-      }
       const confirmResult = await this.$confirm('是否确定删除？', '提示', {
         confirmButtonText: "确定",
         cancelButtonText: "取消",

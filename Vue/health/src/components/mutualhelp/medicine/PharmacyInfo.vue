@@ -44,7 +44,7 @@
             </el-table-column>
 
             <!-- 新增：删除药品按钮 -->
-            <el-table-column label="操作" align="center" v-show="role == '管理员'">
+            <el-table-column label="操作" align="center" v-if="role == '管理员'">
               <template v-slot="scope">
                 <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteDrug(scope.row.id)">删除
                 </el-button>
@@ -271,9 +271,6 @@ export default {
 
     // ==================== 删除药品 ====================
     async deleteDrug(id) {
-      if (this.role !== '管理员') {
-        return this.$message.warning('无权限执行此操作')
-      }
       this.$confirm('确定要删除该药品吗？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
