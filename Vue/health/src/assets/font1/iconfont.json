@@ -1,0 +1,65 @@
+{
+  "id": "1804356",
+  "name": "vueProject",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon",
+  "description": "vue 项目的矢量图",
+  "glyphs": [
+    {
+      "icon_id": "1165",
+      "name": "管理员",
+      "font_class": "guanliyuan",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "947482",
+      "name": "商品",
+      "font_class": "shangpin",
+      "unicode": "e648",
+      "unicode_decimal": 58952
+    },
+    {
+      "icon_id": "1905581",
+      "name": "书",
+      "font_class": "shu",
+      "unicode": "e71f",
+      "unicode_decimal": 59167
+    },
+    {
+      "icon_id": "3284121",
+      "name": "食物",
+      "font_class": "shiwu",
+      "unicode": "e611",
+      "unicode_decimal": 58897
+    },
+    {
+      "icon_id": "5267632",
+      "name": "运动",
+      "font_class": "sport",
+      "unicode": "e64f",
+      "unicode_decimal": 58959
+    },
+    {
+      "icon_id": "10040231",
+      "name": "卡路里",
+      "font_class": "kaluli",
+      "unicode": "e6eb",
+      "unicode_decimal": 59115
+    },
+    {
+      "icon_id": "813712",
+      "name": "密码",
+      "font_class": "mima",
+      "unicode": "e62f",
+      "unicode_decimal": 58927
+    },
+    {
+      "icon_id": "975307",
+      "name": "登录",
+      "font_class": "denglu",
+      "unicode": "e62e",
+      "unicode_decimal": 58926
+    }
+  ]
+}
