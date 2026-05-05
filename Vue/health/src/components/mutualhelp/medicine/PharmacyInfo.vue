@@ -44,10 +44,9 @@
             </el-table-column>
 
             <!-- 新增：删除药品按钮 -->
-            <el-table-column label="操作" align="center">
+            <el-table-column label="操作" align="center" v-if="role == '管理员'">
               <template v-slot="scope">
-                <el-button v-show="role == '管理员'" type="danger" icon="el-icon-delete" size="mini"
-                  @click="deleteDrug(scope.row.id)">删除
+                <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteDrug(scope.row.id)">删除
                 </el-button>
               </template>
             </el-table-column>
@@ -223,8 +222,8 @@ export default {
         this.total = this.drugList[0].total || 0
         this.drugList.forEach(item => {
           if (item.photo) item.photo = require('@/' + item.photo)
-          item.isCheck = false
-          item.orderNumber = 1
+          this.$set(item, 'isCheck', false)
+          this.$set(item, 'orderNumber', 1)
         })
       }
     },
