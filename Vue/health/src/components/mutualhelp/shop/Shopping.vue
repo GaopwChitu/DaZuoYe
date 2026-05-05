@@ -40,7 +40,11 @@
         <el-table-column label="商品名称" prop="goodsName" align="center"></el-table-column>
         <el-table-column label="图片" align="center">
           <template v-slot="scope">
-            <el-image style="width: 100%; height: 100px" :src="require('@/' + scope.row.imgUrl)" alt=""></el-image>
+            <div v-if="!scope.row.imgUrl" style="width:100%;height:100px;line-height:100px;color:#999">
+              暂无图片
+            </div>
+            <el-image v-else style="width: 100%; height: 100px" :src="require('@/' + scope.row.imgUrl)"
+              alt=""></el-image>
           </template>
         </el-table-column>
         <el-table-column label="单价" prop="orderPrice" align="center"></el-table-column>
