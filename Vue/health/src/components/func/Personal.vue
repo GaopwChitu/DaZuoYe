@@ -34,7 +34,7 @@
 
           <el-form-item label="密码：">
             <el-input v-model="editForm.password" show-password style="width: 360px" disabled></el-input>
-            <el-button type="info" style="margin-left: 20px" @click="switchToPassword">修改密码</el-button>
+            <el-button type="primary" style="margin-left: 20px" @click="switchToPassword">修改密码</el-button>
           </el-form-item>
         </template>
 

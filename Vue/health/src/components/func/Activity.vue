@@ -187,7 +187,11 @@ export default {
       }
       const { data: res } = await this.$http.get("/active/list", { params: this.queryInfo })
       this.activeList = res;
-      this.total = this.activeList[0].total;
+      if (this.activeList && this.activeList.length > 0) {
+        this.total = this.activeList[0].total;
+      } else {
+        this.total = 0;
+      }
       for (let i = 0; i < this.activeList.length; i++) {
         this.activeList[i].joinList = await this.getJoinList(this.activeList[i].id)
       }

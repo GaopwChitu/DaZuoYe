@@ -52,7 +52,7 @@
             <span style="margin-left: 15px">{{ scope.row.createTime }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作" align="center" v-if="role !== '用户'">
           <template v-slot="scope">
             <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row)"
               v-if="scope.row.style === '0'">
@@ -120,9 +120,9 @@
                 <span style="font-size: 20px">{{ editKnowledgeForm.readNumber }}</span>
               </el-col>
             </el-row>
-            <el-row style="margin-top: 20px; padding: 0 20px;">
-              <div v-html="editKnowledgeForm.content" style="font-size: 15px;font-family: 宋体;"></div>
-            </el-row>
+            <div style="font-size: 16px; margin-top: 8px; line-height: 1.8;"
+              v-html="editKnowledgeForm.content || '暂无内容'">
+            </div>
           </el-form>
           <span style="margin-bottom: 20px"></span>
         </el-dialog>
@@ -204,7 +204,6 @@ export default {
     }
   },
   created() {
-    this.queryInfo.style = "1";
     this.role = (JSON.parse(window.sessionStorage.getItem("user"))).role
     this.id = (JSON.parse(window.sessionStorage.getItem("user"))).id
     this.username = (JSON.parse(window.sessionStorage.getItem("user"))).username
@@ -217,6 +216,7 @@ export default {
       }
       if (this.role == '用户') {
         this.roleId = '1'
+        this.queryInfo.style = '1'
       }
       const { data: res } = await this.$http.get("/knowledge/list", { params: this.queryInfo })
       this.knowledgeList = res;
@@ -330,6 +330,7 @@ export default {
     async readBook(id, style) {
       const { data: res } = await this.$http.get("/knowledge/info?id=" + id + "&style=" + style);
       this.editKnowledgeForm = res;
+      console.log(this.editKnowledgeForm)
       this.editKnowledgeForm.createTime =
         this.$moment(this.editKnowledgeForm.createTime).utc().format('YYYY/MM/DD HH:mm:ss')
       this.isReading = true;
