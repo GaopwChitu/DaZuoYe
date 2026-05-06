@@ -121,6 +121,18 @@
           </el-form-item>
 
         </el-form>
+        <el-divider content-position="center">已参加人员列表</el-divider>
+        <el-table :data="editJoinList" border stripe max-height="300" style="width: 100%">
+          <el-table-column label="序号" type="index" width="60" align="center"></el-table-column>
+          <el-table-column label="姓名" prop="joinName" align="center"></el-table-column>
+          <el-table-column label="参加时间" prop="joinTime" align="center"></el-table-column>
+          <el-table-column label="操作" align="center" width="100">
+            <template v-slot="scope">
+              <el-button type="danger" icon="el-icon-delete" size="mini"
+                @click="deleteJoinById(scope.row)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
         <!-- 内容底部区域    -->
         <span slot="footer" class="dialog-footer">
           <el-button @click="isEditActive = false">取 消</el-button>
@@ -146,6 +158,7 @@ export default {
       editActiveForm: {
         activeNumber: ""
       },
+      editJoinList: [],
       queryInfo: {},
       total: 0,
       isEditActive: false,
@@ -219,6 +232,8 @@ export default {
     async showEditDialog(id) {
       const { data: res } = await this.$http.get("/active/info?id=" + id);
       this.editActiveForm = res;
+      const { data: joinList } = await this.$http.get("/active/joinList?activeId=" + id);
+      this.editJoinList = joinList;
       this.isEditActive = true;
     },
     addActive() {
@@ -292,9 +307,28 @@ export default {
     // 关闭窗口
     editClosed() {
       this.$refs.editActiveFormRef.resetFields();//重置信息
+      this.editJoinList = [];
     },
     insertClosed() {
       this.$refs.addActiveFormRef.resetFields();
+    },
+    async deleteJoinById(row) {
+      const confirmResult = await this.$confirm('是否确定删除该人员？', '提示', {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: 'warning'
+      }).catch(err => err)
+      if (confirmResult !== 'confirm') {
+        return this.$message.info("已取消删除");
+      }
+      const { data: res } = await this.$http.post("/active/deleteJoinById?id=" + row.id);
+      if (res !== "success") {
+        return this.$message.error("删除失败！！！")
+      }
+      this.$message.success("删除成功！！！")
+      await this.getActiveList()
+      const { data: joinList } = await this.$http.get("/active/joinList?activeId=" + this.editActiveForm.id);
+      this.editJoinList = joinList;
     },
     async deleteActive(id) {
       const confirmResult = await this.$confirm('是否确定删除？', '提示', {
