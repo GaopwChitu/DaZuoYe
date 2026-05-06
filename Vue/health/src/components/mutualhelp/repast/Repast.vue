@@ -32,12 +32,12 @@
             <span style="margin-left: 10px">{{ scope.row.createTime }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" v-if="this.role == '管理员'" width="180px">
+        <el-table-column label="操作" align="center" width="180px">
           <template v-slot="scope">
             <el-button type="success" size="mini" @click="updateStatus(scope.row.foodOrderNo, 0)">配送完成</el-button>
             <!--修改-->
             <el-button type="warning" icon="" size="mini" @click="updateStatus(scope.row.foodOrderNo, 2)"
-              v-show="scope.row.orderStatus === '进行中'">废</el-button>
+              v-show="scope.row.orderStatus === '进行中'">取 消</el-button>
             <!--删除-->
             <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteFoodOrder(scope.row.id)">
             </el-button>

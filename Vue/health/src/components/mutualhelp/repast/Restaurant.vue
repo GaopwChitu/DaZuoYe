@@ -63,7 +63,9 @@
         <el-table-column label="价格(元)" prop="foodPrice" align="center"></el-table-column>
         <el-table-column label="下单数量" align="center">
           <template v-slot="scope">
-            <el-input v-model="scope.row.foodNumber"></el-input>
+            <el-button size="mini" @click="scope.row.foodNumber--" :disabled="scope.row.foodNumber <= 1">-</el-button>
+            <span style="margin: 0 8px">{{ scope.row.foodNumber }}</span>
+            <el-button size="mini" @click="scope.row.foodNumber++">+</el-button>
           </template>
         </el-table-column>
         <el-table-column label="操作" align="center" v-if="role == '管理员'">
@@ -276,23 +278,23 @@ export default {
         this.total = this.foodList[0].total
       }
       for (let i = 0; i < this.foodList.length; i++) {
+        // ✅ 强制 Vue 监听这个字段，加减才能生效
+        this.$set(this.foodList[i], 'foodNumber', 1)
+        this.$set(this.foodList[i], 'isCheck', false) // 勾选也同步修复
         const img = this.foodList[i].foodImgUrl
-        // 为空/null 就不拼接，避免报错
         this.foodList[i].foodImgUrl = img ? require('@/' + img) : ''
       }
     },
     checkFoodList(isCheck, row) {
-      let index = -1
-      if (isCheck === true) {
-        index = index + 1
-        this.checkFoods.push(row)
+      // 先从数组里移除当前项
+      let idx = this.checkFoods.findIndex(item => item.id === row.id)
+      if (isCheck) {
+        if (idx === -1) {
+          this.checkFoods.push(row)
+        }
       } else {
-        this.checkFoods.splice(index, 1)
-        index = index - 1
-      }
-      for (let i = 0; i < this.communities.length; i++) {
-        if (this.queryInfo.communityCd === this.communities[i].communityCd) {
-          this.addFoodOrderForm.address = this.communities[i].communityName
+        if (idx !== -1) {
+          this.checkFoods.splice(idx, 1)
         }
       }
     },
@@ -391,24 +393,32 @@ export default {
     },
     async buyFood() {
       this.addFoodOrderForm.foodNames = ''
-      if (this.checkFoods === undefined || this.checkFoods.length <= 0) {
+      this.addFoodOrderForm.foodPrice = 0
+
+      if (!this.checkFoods || this.checkFoods.length <= 0) {
         return this.$message.warning("请选择商品！！！");
       }
       if (!this.queryInfo.restaurant) {
         return this.$message.warning("请选择餐厅！");
       }
 
+      // ✅ 自动获取当前选中社区的名称 → 赋值给 address
+      let currentCommunity = this.communities.find(item => item.communityCd === this.queryInfo.communityCd);
+      this.addFoodOrderForm.address = currentCommunity ? currentCommunity.communityName : '未知社区';
+
       this.addFoodOrderForm.foodOrderNo = "CY" + Math.floor(Math.random() * 100000000)
       this.addFoodOrderForm.contactNumber = (JSON.parse(window.sessionStorage.getItem("user"))).phone
       this.addFoodOrderForm.orderPerson = (JSON.parse(window.sessionStorage.getItem("user"))).username
-      // 确保传递正确的字段
       this.addFoodOrderForm.communityRestaurant = this.queryInfo.restaurant;
       this.addFoodOrderForm.communityId = this.queryInfo.communityCd;
 
       for (let i = 0; i < this.checkFoods.length; i++) {
-        this.addFoodOrderForm.foodNames = this.addFoodOrderForm.foodNames + this.checkFoods[i].foodNumber + "份" + this.checkFoods[i].foodName + ";"
-        this.addFoodOrderForm.foodPrice = (this.addFoodOrderForm.foodPrice - 0) + ((this.checkFoods[i].foodPrice - 0) * (this.checkFoods[i].foodNumber))
+        let food = this.checkFoods[i];
+        let num = food.foodNumber;
+        this.addFoodOrderForm.foodNames += `${num}份${food.foodName};`;
+        this.addFoodOrderForm.foodPrice += (food.foodPrice * 1) * (num * 1);
       }
+
       this.addFoodOrderForm.orderStatus = 1
       const { data: res } = await this.$http.post("/foodOrder/insertFoodOrder", this.addFoodOrderForm)
       if (res !== "success") {
@@ -416,11 +426,9 @@ export default {
       }
       this.$message.success("购买成功！！！")
 
-      // 购买成功后清空选中项
       this.checkFoods = []
       this.foodList.forEach(item => item.isCheck = false)
-
-      await this.$router.push({ path: "/repast" })
+      this.$router.push({ path: "/repast" })
     },
     handleAvatarSuccess(res, file) {
       let newFile = new FormData();

@@ -175,6 +175,7 @@ export default {
         introduction: '',
         content: ''
       },
+      editKey: 0,
       total: 0,
       insert: false,
       isReading: false,
@@ -327,7 +328,6 @@ export default {
     async readBook(id, style) {
       const { data: res } = await this.$http.get("/knowledge/info?id=" + id + "&style=" + style);
       this.editKnowledgeForm = res;
-      console.log(this.editKnowledgeForm)
       this.editKnowledgeForm.createTime =
         this.$moment(this.editKnowledgeForm.createTime).utc().format('YYYY/MM/DD HH:mm:ss')
       this.isReading = true;
@@ -338,6 +338,7 @@ export default {
       this.editKnowledgeForm = res;
       this.editKnowledgeForm.createTime =
         this.$moment(this.editKnowledgeForm.createTime).utc().format('YYYY/MM/DD HH:mm:ss')
+      this.editKey++;
       this.editDialogVisible = true;
     },
     submitCancle() {
