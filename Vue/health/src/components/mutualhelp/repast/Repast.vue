@@ -82,7 +82,13 @@ export default {
       return this.$message.success("状态修改成功！！！")
     },
     async getFoodOrderList() {
-      this.queryInfo.orderPerson = (JSON.parse(window.sessionStorage.getItem("user"))).username;
+      const user = JSON.parse(window.sessionStorage.getItem("user"));
+      if (user.role === "用户") {
+        this.queryInfo.orderPerson = user.username;
+      } else {
+        // 管理员不传orderPerson，查看所有订单
+        delete this.queryInfo.orderPerson;
+      }
       const { data: res } = await this.$http.get("/foodOrder/list", { params: this.queryInfo })
       this.foodOrderList = res
       if (this, this.foodOrderList.length > 0) {
