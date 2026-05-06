@@ -34,7 +34,8 @@
         </el-table-column>
         <el-table-column label="操作" align="center" width="180px">
           <template v-slot="scope">
-            <el-button type="success" size="mini" @click="updateStatus(scope.row.foodOrderNo, 0)">配送完成</el-button>
+            <el-button type="success" size="mini" @click="updateStatus(scope.row.foodOrderNo, 0)"
+              v-show="scope.row.orderStatus === '进行中'">配送完成</el-button>
             <!--修改-->
             <el-button type="warning" icon="" size="mini" @click="updateStatus(scope.row.foodOrderNo, 2)"
               v-show="scope.row.orderStatus === '进行中'">取 消</el-button>
