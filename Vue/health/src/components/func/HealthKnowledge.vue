@@ -21,14 +21,7 @@
               style="width: 70%; padding-right: 10px" />
           </div>
         </el-col>
-        <el-col :span="8">
-          <div>
-            <label>发布者名称：</label>
-            <el-input placeholder="请输入发布者名称" v-model="queryInfo.createName" clearable
-              style="width: 70%; padding-right: 10px" />
-          </div>
-        </el-col>
-        <el-col :span="6" style="text-align: right;">
+        <el-col :span="8" style="text-align: right;">
           <el-button type="primary" icon="el-icon-search" @click="search">搜索</el-button>
           <el-button type="primary" icon="el-icon-plus" @click="btnInsert">添加</el-button>
         </el-col>
@@ -52,7 +45,7 @@
             <span style="margin-left: 15px">{{ scope.row.createTime }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" v-if="role !== '用户'">
+        <el-table-column label="操作" align="center">
           <template v-slot="scope">
             <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row)"
               v-if="scope.row.style === '0'">
@@ -230,9 +223,6 @@ export default {
       }
     },
     async deleteKnowledge(row) {
-      if (row.createId !== this.id || this.roleId != '2') {
-        return this.$message.error("没有权限操作！！！")
-      }
       const confirmResult = await this.$confirm('是否确定删除？', '提示', {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
@@ -286,9 +276,14 @@ export default {
     },
     btnDraft() {
       this.queryInfo.style = 0;
-      this.queryInfo.createId = this.id;
-      this.queryInfo.roleId = this.roleId;
-      this.queryInfo.createName = this.username;
+      this.queryInfo.roleId = '';
+      this.queryInfo.createName = '';
+      // 管理员可以看到所有草稿，普通用户只能看自己的草稿
+      if (this.roleId === '2') {
+        this.queryInfo.createId = '';
+      } else {
+        this.queryInfo.createId = this.id;
+      }
       this.getKnowledgeList();
     },
     addPublish() {
@@ -339,9 +334,6 @@ export default {
       await this.getKnowledgeList();
     },
     async showEditDialog(row) {
-      if (row.createId !== this.id || this.roleId != '2') {
-        return this.$message.error("没有权限操作！！！")
-      }
       const { data: res } = await this.$http.get("/knowledge/info?id=" + row.id + "&style=" + row.style);
       this.editKnowledgeForm = res;
       this.editKnowledgeForm.createTime =
