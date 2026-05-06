@@ -4,9 +4,10 @@
       <el-row class="search-row">
         <el-col :span="8" :offset="8">
           <el-button class="search-button" icon="el-icon-search" @click="showSearchBox">点击这里进行搜索</el-button>
+          <el-button class="reset-button" icon="el-icon-refresh" @click="showSearch">重置</el-button>
         </el-col>
       </el-row>
-      <el-dialog title="搜索健康知识" :visible.sync="showDialog">
+      <el-dialog title="搜索运动知识" :visible.sync="showDialog">
         <el-input placeholder="请输入你想要的内容" v-model="searchText"></el-input>
         <el-button slot="footer" @click="closeDialog">取消</el-button>
         <el-button slot="footer" type="primary" @click="Search">搜索</el-button>
@@ -108,7 +109,7 @@ export default {
         const sportInfoData = response.data.sportInfos;
         // 根据输入的搜索内容进行过滤
         const filteredSportInfoData = sportInfoData.filter((info) => {
-          return info.sportType.includes(this.searchText);
+          return info.sportType && info.sportType.includes(this.searchText);
         });
         // 重构每条运动信息的数据格式
         const sportInfos = filteredSportInfoData.map((info) => ({

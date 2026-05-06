@@ -1,5 +1,6 @@
 <template>
   <div class="box_Detail">
+    <el-button type="warning" icon="el-icon-back" style="margin: 10px" @click="home">返回</el-button>
     <div class="box1">
       <el-image fit="contain" :src="detailInfo.sportType === '瑜伽'
         ? 'https://img2.baidu.com/it/u=2510084494,3174869554&fm=253&fmt=auto&app=120&f=JPEG?w=1422&h=800'

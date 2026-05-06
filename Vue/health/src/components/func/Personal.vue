@@ -29,17 +29,7 @@
           </el-form-item>
 
           <el-form-item label="地址" prop="address">
-            <el-select v-model="editForm.address" filterable clearable style="width: 360px">
-              <el-option v-for="item in communities" :key="item.communityCd" :label="item.communityName"
-                :value="item.communityCd"></el-option>
-            </el-select>
-          </el-form-item>
-
-          <el-form-item label="角色：" prop="role">
-            <el-radio-group v-model="editForm.role">
-              <el-radio label="管理员">管理员</el-radio>
-              <el-radio label="用户">用户</el-radio>
-            </el-radio-group>
+            <el-input v-model="editForm.address" style="width: 360px"></el-input>
           </el-form-item>
 
           <el-form-item label="密码：">
@@ -81,12 +71,10 @@ export default {
         sex: "",
         phone: "",
         address: "",
-        role: "",
         password: "",
         newPassword: "",
         passwordConfirm: ""
       },
-      communities: [],
       isPasswordMode: false,
 
       // 基础规则，后续用watch动态改必填和星号
@@ -136,7 +124,6 @@ export default {
 
   created() {
     this.loadUserInfo();
-    this.selectAddress();
   },
 
   methods: {
@@ -146,12 +133,6 @@ export default {
         return callback(new Error("两次输入密码不一致"));
       }
       callback();
-    },
-
-    // 获取小区地址
-    async selectAddress() {
-      const { data: res } = await this.$http.get("/address");
-      this.communities = res.data;
     },
 
     // 加载用户信息
