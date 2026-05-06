@@ -207,17 +207,18 @@ export default {
     this.role = (JSON.parse(window.sessionStorage.getItem("user"))).role
     this.id = (JSON.parse(window.sessionStorage.getItem("user"))).id
     this.username = (JSON.parse(window.sessionStorage.getItem("user"))).username
+    // 初始化角色ID
+    if (this.role == '管理员') {
+      this.roleId = '2'
+    }
+    if (this.role == '用户') {
+      this.roleId = '1'
+      this.queryInfo.style = '1'
+    }
     this.getKnowledgeList();
   },
   methods: {
     async getKnowledgeList() {
-      if (this.role == '管理员') {
-        this.roleId = '2'
-      }
-      if (this.role == '用户') {
-        this.roleId = '1'
-        this.queryInfo.style = '1'
-      }
       const { data: res } = await this.$http.get("/knowledge/list", { params: this.queryInfo })
       this.knowledgeList = res;
       if (this.knowledgeList && this.knowledgeList.length > 0) {
@@ -310,6 +311,7 @@ export default {
       this.$refs.addKnowledgeFormRef.validate(async valid => {
         if (!valid) return;
         this.addKnowledgeForm.createId = this.id;
+        this.addKnowledgeForm.roleId = this.roleId
         this.addKnowledgeForm.style = "0";
         const { data: res } = await this.$http.post("/knowledge/insertKnowledge", this.addKnowledgeForm);
         if (res !== "success") {
