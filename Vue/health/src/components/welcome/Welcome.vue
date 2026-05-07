@@ -355,7 +355,6 @@ export default {
           {
             name: '订单',
             type: 'line',
-            stack: 'Total',
             areaStyle: {},
             smooth: true,
             emphasis: {
@@ -366,7 +365,6 @@ export default {
           {
             name: '留言',
             type: 'line',
-            stack: 'Total',
             areaStyle: {},
             smooth: true,
             emphasis: {
@@ -377,7 +375,6 @@ export default {
           {
             name: '用户',
             type: 'line',
-            stack: 'Total',
             smooth: true,
             label: {
               show: true,
@@ -434,7 +431,6 @@ export default {
   mounted() {
     this.$nextTick(function () {
       this.timer = setInterval(this.scrollAnimate, 1500);
-      this.stackCharts();
       this.pieChart();
       this.barCharts();
     })

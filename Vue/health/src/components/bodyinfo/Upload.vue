@@ -1,20 +1,11 @@
 <template>
   <div class="info-upload">
     <h1 class="title">身体信息上传</h1>
-    <el-form
-      :model="form"
-      :rules="rules"
-      ref="form"
-      label-width="100px"
-      class="form"
-    >
+    <el-form :model="form" :rules="rules" ref="form" label-width="100px" class="form">
       <el-row>
         <el-col :xs="24" :sm="12">
           <el-form-item label="姓名" prop="name">
-            <el-input
-              v-model="form.name"
-              :placeholder="'请输入姓名'"
-            ></el-input>
+            <el-input v-model="form.name" :placeholder="'请输入姓名'"></el-input>
           </el-form-item>
         </el-col>
 
@@ -51,11 +42,7 @@
 
         <el-col :xs="24" :sm="12">
           <el-form-item label="血糖" prop="bloodSugar">
-            <el-input-number
-              v-model="form.bloodSugar"
-              :min="0"
-              :step="0.1"
-            ></el-input-number>
+            <el-input-number v-model="form.bloodSugar" :min="0" :step="0.1"></el-input-number>
           </el-form-item>
         </el-col>
       </el-row>
@@ -63,21 +50,13 @@
       <el-row>
         <el-col :xs="24" :sm="12">
           <el-form-item label="血压" prop="bloodPressure">
-            <el-input-number
-              v-model="form.bloodPressure"
-              :min="0"
-              :step="0.1"
-            ></el-input-number>
+            <el-input-number v-model="form.bloodPressure" :min="0" :step="0.1"></el-input-number>
           </el-form-item>
         </el-col>
 
         <el-col :xs="24" :sm="12">
           <el-form-item label="胆固醇" prop="bloodLipid">
-            <el-input-number
-              v-model="form.bloodLipid"
-              :min="0"
-              :step="0.1"
-            ></el-input-number>
+            <el-input-number v-model="form.bloodLipid" :min="0" :step="0.1"></el-input-number>
           </el-form-item>
         </el-col>
       </el-row>
@@ -85,10 +64,7 @@
       <el-row>
         <el-col :xs="24" :sm="12">
           <el-form-item label="心率/BPM" prop="heartRate">
-            <el-input-number
-              v-model="form.heartRate"
-              :min="0"
-            ></el-input-number>
+            <el-input-number v-model="form.heartRate" :min="0"></el-input-number>
           </el-form-item>
         </el-col>
 
@@ -100,11 +76,7 @@
 
         <el-col :xs="24" :sm="12">
           <el-form-item label="睡眠时长/h" prop="sleepDuration">
-            <el-input-number
-              v-model="form.sleepDuration"
-              :min="0"
-              :step="0.1"
-            ></el-input-number>
+            <el-input-number v-model="form.sleepDuration" :min="0" :step="0.1"></el-input-number>
           </el-form-item>
         </el-col>
 
@@ -151,10 +123,7 @@
 
         <el-col :xs="24" :sm="12">
           <el-form-item label="饮水量/ml" prop="waterConsumption">
-            <el-input-number
-              v-model="form.waterConsumption"
-              :min="0"
-            ></el-input-number>
+            <el-input-number v-model="form.waterConsumption" :min="0"></el-input-number>
           </el-form-item>
         </el-col>
       </el-row>
@@ -166,7 +135,7 @@
     </el-form>
   </div>
 </template>
-  
+
 <script>
 
 export default {
@@ -255,7 +224,7 @@ export default {
           { required: true, message: "请选择是否运动", trigger: "change" },
         ],
         foodTypes: [
-          { required: true, message: "请选择摄入较多的食物种类", trigger: "blur" },
+          { required: true, message: "请选择摄入较多的食物种类", trigger: "change" },
         ],
         waterConsumption: [
           { required: true, message: "请输入饮水量", trigger: "blur" },
@@ -267,44 +236,35 @@ export default {
 
   methods: {
     async BodyInformation(data) {
-      const res = await this.$http.post(`BodyInformation`,data)
-      return res.data;
-      },
-    async BodyInformationNotes(data) {
-      const res = await this.$http.post(`BodyInformationNotes`,data)
+      const res = await this.$http.post(`BodyInformation`, data)
       return res.data;
     },
-    submitForm() {
+    async BodyInformationNotes(data) {
+      const res = await this.$http.post(`BodyInformationNotes`, data)
+      return res.data;
+    },
+    async submitForm() {
       // 如果表单数据中没有 id 属性，则将组件的 id 属性赋值给表单数据的 id 属性
       if (!this.form.id) {
         this.form.id = this.id;
       }
 
-      this.$refs.form.validate((valid) => {
-        if (valid) {
-          this.BodyInformation(this.form)
-            .then((response) => {
-              this.$message({
-                type: "success",
-                message: response.message,
-              });
-            })
-            .catch((error) => {
-              console.log("BodyInformation错误")
-            });
-            
-          this.BodyInformationNotes(this.form)
-            .then((response) => {
-              this.$message({
-                type: "success",
-                message: response.message,
-              });
-            })
-            .catch((error) => {
-              console.log("BodyInformationNotes错误")
-            });
-        } else {
+      this.$refs.form.validate(async (valid) => {
+        if (!valid) {
           return false;
+        }
+
+        try {
+          await this.BodyInformation(this.form)
+        } catch (error) {
+          return this.$message.error("身体信息上传失败，请重试");
+        }
+
+        try {
+          await this.BodyInformationNotes(this.form)
+          this.$message.success("上传成功");
+        } catch (error) {
+          return this.$message.error("身体信息备注上传失败，请重试");
         }
       });
     },
@@ -331,7 +291,7 @@ export default {
   },
 };
 </script>
-  
+
 <style scoped>
 .info-upload {
   max-width: 800px;
