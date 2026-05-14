@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.health.dao.UserDao">
+    <select id="getUserByMessage" resultType="com.work.health.bean.User">
+        SELECT *
+        FROM `user`
+        WHERE username = #{username}
+          AND password = #{password}
+          AND state = 1
+    </select>
+
+    <select id="getAllUser" resultType="com.work.health.bean.User">
+        SELECT
+        id,username,sex,password,email,phone,address,role,state,avatar,
+        (
+        SELECT COUNT(*)
+        FROM user
+        <where>
+            1=1
+            <if test="user.username != null and user.username != ''">
+                AND username = #{user.username}
+            </if>
+        </where>
+        ) AS total
+        FROM user
+        <where>
+            1=1
+            <if test="user.username != null and user.username != ''">
+                AND username = #{user.username}
+            </if>
+        </where>
+        ORDER BY id
+        LIMIT #{pageStart}, #{pageSize}
+    </select>
+
+    <update id="updateState">
+        UPDATE `user`
+        SET state = #{state}
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectAddress" resultType="com.work.health.bean.Community">
+        SELECT id, community_name as communityName, community_code as communityCd
+        FROM communities
+        WHERE state = 1
+          AND del_flag = 0
+    </select>
+
+    <insert id="addUser">
+        INSERT INTO user
+            (username, sex, password, email, phone, address, role, state)
+            VALUE
+            (#{username},#{sex},#{password},#{email},#{phone},#{address},#{role},#{state})
+    </insert>
+
+    <delete id="deleteUser">
+        DELETE
+        FROM `user`
+        WHERE id = #{id}
+    </delete>
+
+    <select id="getEditUser" resultType="com.work.health.bean.User">
+        SELECT *
+        FROM `user`
+        WHERE id = #{id}
+    </select>
+
+    <update id="editUser">
+        UPDATE `user`
+        SET username = #{username},
+            sex      = #{sex},
+            password = #{password},
+            email    = #{email},
+            phone    = #{phone},
+            address  = #{address}
+        WHERE id = #{id}
+    </update>
+
+    <update id="changeRights">
+        UPDATE `user`
+        SET role = #{role}
+        WHERE id = #{id}
+    </update>
+</mapper>

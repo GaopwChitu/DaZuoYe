@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.health.dao.FoodOrderDao">
+    <select id="getFoodOrderList" parameterType="com.work.health.bean.FoodOrder"
+            resultType="com.work.health.bean.FoodOrder">
+        SELECT
+        a.id,a.foodOrderNo,a.contactNumber,a.orderPerson,a.address,a.foodNames,a.foodPrice,a.orderStatus,a.createtime,a.communityRestaurant,
+        (SELECT COUNT(*)
+        FROM food_order a
+        <where>
+            1=1
+            <if test="foodOrderNo != null and foodOrderNo != ''">
+                AND a.foodOrderNo like "%"#{foodOrderNo}"%"
+            </if>
+            <if test="orderPerson != null and orderPerson != ''">
+                AND a.orderPerson = #{orderPerson}
+            </if>
+            AND a.del_flag = 0
+        </where>
+        ) AS total
+        FROM food_order a
+        <where>
+            1=1
+            <if test="foodOrderNo != null and foodOrderNo != ''">
+                AND a.foodOrderNo like "%"#{foodOrderNo}"%"
+            </if>
+            <if test="orderPerson != null and orderPerson != ''">
+                AND a.orderPerson = #{orderPerson}
+            </if>
+            AND a.del_flag = 0
+        </where>
+        ORDER BY a.id
+        LIMIT #{pageStart},#{pageSize}
+    </select>
+
+    <!-- 查询餐厅是否存在 -->
+    <select id="countRestaurantByName" parameterType="com.work.health.bean.CommunityRestaurant" resultType="int">
+        SELECT COUNT(*)
+        FROM community_restaurant
+        WHERE communityCd = #{communityCd}
+          AND restaurant = #{restaurant}
+          AND del_flag = 0
+    </select>
+
+    <!-- ========================== 删除餐厅下的所有菜品 ========================== -->
+    <delete id="deleteFoodByRestaurant">
+        DELETE FROM food
+        WHERE communityCd = #{communityCd}
+          AND restaurant = #{restaurant}
+    </delete>
+
+    <!-- ========================== 删除餐厅 ========================== -->
+    <delete id="deleteRestaurant">
+        DELETE FROM community_restaurant
+        WHERE communityCd = #{communityCd}
+          AND restaurant = #{restaurant}
+    </delete>
+
+    <insert id="insertRestaurant" parameterType="com.work.health.bean.CommunityRestaurant">
+        INSERT
+        community_restaurant
+        (communityCd,restaurant,del_flag,createtime)
+        VALUES
+        (
+        #{communityCd},
+        #{restaurant},
+        0,
+        current_time
+        )
+    </insert>
+
+    <select id="getRestaurants" parameterType="com.work.health.bean.CommunityRestaurant"
+            resultType="com.work.health.bean.CommunityRestaurant">
+        SELECT restaurant
+        FROM community_restaurant
+        WHERE communityCd = #{communityCd}
+          AND del_flag = 0
+    </select>
+
+    <insert id="insertFood" parameterType="com.work.health.bean.Food">
+        INSERT
+        food
+        (communityCd,restaurant,foodName,foodImgUrl,foodPrice,createtime,del_flag)
+        VALUES
+        (
+        #{communityCd},
+        #{restaurant},
+        #{foodName},
+        #{foodImgUrl},
+        #{foodPrice},
+        current_time,
+        0
+        )
+    </insert>
+
+    <select id="getFoodList" parameterType="com.work.health.bean.Food" resultType="com.work.health.bean.Food">
+        SELECT id,
+               restaurant,
+               foodName,
+               foodImgUrl,
+               foodPrice,
+               (SELECT COUNT(*)
+                FROM food
+                WHERE communityCd = #{communityCd}
+                  AND restaurant = #{restaurant}
+                  AND del_flag = 0
+               ) AS total
+        FROM food
+        WHERE communityCd = #{communityCd}
+          AND restaurant = #{restaurant}
+          AND del_flag = 0
+    </select>
+
+    <insert id="insertFoodOrder" parameterType="com.work.health.bean.FoodOrder">
+        INSERT INTO food_order
+        (
+        foodOrderNo,
+        contactNumber,
+        orderPerson,
+        address,
+        communityRestaurant,  <!-- 这里！必须驼峰！ -->
+        communityId,
+        foodNames,
+        foodPrice,
+        orderStatus,
+        createTime,
+        del_flag
+        )
+        VALUES
+        (
+        #{foodOrderNo},
+        #{contactNumber},
+        #{orderPerson},
+        #{address},
+        #{communityRestaurant},  <!-- 这里也驼峰！ -->
+        #{communityId},
+        #{foodNames},
+        #{foodPrice},
+        #{orderStatus},
+        current_time,
+        0
+        )
+    </insert>
+
+    <update id="deleteFoodOrderById" parameterType="com.work.health.bean.FoodOrder">
+        UPDATE food_order
+        SET del_flag   = 1,
+            updatetime = current_time
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteFoodById" parameterType="com.work.health.bean.Food">
+        UPDATE food
+        SET del_flag   = 1,
+            updatetime = current_time
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus" parameterType="com.work.health.bean.FoodOrder">
+        UPDATE food_order
+        SET orderStatus = #{orderStatus}
+        WHERE foodOrderNo = #{foodOrderNo}
+    </update>
+
+</mapper>

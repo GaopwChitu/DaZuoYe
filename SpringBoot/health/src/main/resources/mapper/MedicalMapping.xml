@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.health.dao.MedicalDao">
+    <!--    获取业务列表-->
+    <select id="getMedicalList" parameterType="com.work.health.bean.Medical" resultType="com.work.health.bean.Medical">
+        SELECT DISTINCT
+        a.id,
+        a.businessNo,
+        b.username,
+        a.businessType,
+        a.price,
+        a.businessContent,
+        a.businessOrganization,
+        a.createTime,
+        a.businessStatus,
+        # 总条数
+        (SELECT COUNT(DISTINCT a.id)
+        FROM medical a
+        JOIN user b ON a.createId = b.id
+        <if test="roleId == 2">
+            JOIN appointment d ON a.businessNo = d.appointNo
+            JOIN doctor e ON d.doctorId = e.id
+        </if>
+        <where>
+            <if test="username != '' and username != null">
+                AND b.username like "%"#{username}"%"
+            </if>
+            <if test="roleId == 2">
+                AND e.doctor = #{doctor}
+            </if>
+            <if test="businessType != '' and businessType != null">
+                AND a.businessType = #{businessType}
+            </if>
+            <if test="businessOrganization != '' and businessOrganization != null">
+                AND a.businessOrganization like "%"#{businessOrganization}"%"
+            </if>
+            <if test="businessStatus != '' and businessStatus != null">
+                AND a.businessStatus= #{businessStatus}
+            </if>
+            <if test="createId != null and createId != ''">
+                AND a.createId = #{createId}
+            </if>
+            AND a.del_flag = 0
+        </where>
+        ) AS total
+        FROM medical a
+        JOIN user b ON a.createId = b.id
+        <if test="roleId == 2">
+            JOIN appointment d ON a.businessNo = d.appointNo
+            JOIN doctor e ON d.doctorId = e.id
+        </if>
+        <where>
+            <if test="username != '' and username != null">
+                AND b.username like "%"#{username}"%"
+            </if>
+            <if test="roleId == 2">
+                AND e.doctor = #{doctor}
+            </if>
+            <if test="businessType != '' and businessType != null">
+                AND a.businessType = #{businessType}
+            </if>
+            <if test="businessOrganization != '' and businessOrganization != null">
+                AND a.businessOrganization like "%"#{businessOrganization}"%"
+            </if>
+            <if test="businessStatus != '' and businessStatus != null">
+                AND a.businessStatus= #{businessStatus}
+            </if>
+            <if test="createId != null and createId != ''">
+                AND a.createId = #{createId}
+            </if>
+            AND a.del_flag = 0
+        </where>
+        ORDER BY a.id
+        LIMIT #{pageStart},#{pageSize}
+    </select>
+
+    <!--    获取药店列表-->
+    <select id="getPharmacyList" parameterType="com.work.health.bean.Pharmacy" resultType="com.work.health.bean.Pharmacy">
+        SELECT id,name,photo,address,value,monthlySale,startDelivery,delivery,distance,deliveryTime,
+        (SELECT COUNT(*)
+            FROM pharmacy
+        <where>
+            1 = 1
+            <if test="name != null and name != ''">
+                AND name like "%"#{name}"%"
+            </if>
+            AND del_flag = 0
+        </where>
+        ) AS total
+        FROM pharmacy
+        <where>
+            1 = 1
+            <if test="name != null and name != ''">
+                AND name like "%"#{name}"%"
+            </if>
+                AND del_flag = 0
+        </where>
+        ORDER BY id
+        LIMIT #{pageStart},#{pageSize}
+    </select>
+
+    <!--    删除业务-->
+    <update id="deleteMedical" parameterType="com.work.health.bean.Medical">
+        UPDATE medical
+            SET
+                del_flag = 1,
+                updatetime = current_time
+            WHERE
+                id = #{id}
+    </update>
+
+    <!--    添加药店-->
+    <insert id="insertPharmacy" parameterType="com.work.health.bean.Pharmacy">
+        INSERT pharmacy
+        (name,photo,address,value,monthlySale,startDelivery,delivery,distance,deliveryTime,createId,createtime,del_flag)
+        VALUES
+        (#{name},#{photo},#{address},#{value},0,#{startDelivery},#{delivery},#{distance},#{deliveryTime},#{createId},current_time,0)
+    </insert>
+    <!-- 查询药品-->
+    <select id="getDrugList" parameterType="com.work.health.bean.Drug" resultType="com.work.health.bean.Drug">
+        SELECT a.id,a.pharmacy_id AS pharmacyId,a.drugName,a.photo,a.drugNumber,a.unit,a.price,a.termOfValidity,a.explain,
+        (SELECT COUNT(*)
+        FROM drug a
+        LEFT JOIN pharmacy b
+        ON a.pharmacy_id = b.id
+        LEFT JOIN drug_type c
+        ON a.drugTypeId = c.id
+        <where>
+            1 = 1
+            <if test="drugName != '' and drugName != null">
+                AND a.drugName like "%"#{drugName}"%"
+            </if>
+            AND c.drugType = #{drugType}
+            AND a.del_flag = 0
+            AND a.pharmacy_id = #{pharmacyId}
+        </where>
+        ) AS total
+        FROM drug a
+        LEFT JOIN pharmacy b
+        ON a.pharmacy_id = b.id
+        LEFT JOIN drug_type c
+        ON a.drugTypeId = c.id
+        <where>
+            1 = 1
+            <if test="drugName != '' and drugName != null">
+                AND a.drugName like "%"#{drugName}"%"
+            </if>
+                AND c.drugType = #{drugType}
+                AND a.del_flag = 0
+                AND a.pharmacy_id = #{pharmacyId}
+        </where>
+    </select>
+    <!--删除药品（逻辑删除）-->
+    <update id="deleteDrug" parameterType="int">
+        UPDATE drug
+            SET
+                del_flag = 1
+            WHERE
+                id = #{id}
+    </update>
+    <!--查询药品种类-->
+    <select id="getDrugTypeList" resultType="com.work.health.bean.Drug">
+            SELECT id AS drugTypeId,drugType
+            FROM drug_type
+    </select>
+    <!--添加药品-->
+    <insert id="insertDrug" parameterType="com.work.health.bean.Drug">
+        INSERT drug
+        (pharmacy_id,drugName,photo,drugNumber,unit,price,termOfValidity,`explain`,drugTypeId,createId,createtime,del_flag)
+        VALUES
+        (#{pharmacyId},#{drugName},#{photo},#{drugNumber},#{unit},#{price},#{termOfValidity},#{explain},#{drugTypeId},#{createId},current_time,0)
+    </insert>
+    <!--查询医院-->
+    <select id="getHospitalList" parameterType="com.work.health.bean.Hospital" resultType="com.work.health.bean.Hospital">
+        SELECT id,hospitalName,logo,address,grade,registerTime,
+        (SELECT
+            COUNT(*)
+            FROM
+            hospital
+        <where>
+            1 = 1
+            <if test="hospitalName != '' and hospitalName != null">
+                AND hospitalName like "%"#{hospitalName}"%"
+            </if>
+            <if test="address != '' and address != null">
+                AND address like "%"#{address}"%"
+            </if>
+            AND del_flag = 0
+        </where>
+        ) AS total
+        FROM
+        hospital
+        <where>
+            1 = 1
+            <if test="hospitalName != '' and hospitalName != null">
+               AND hospitalName like "%"#{hospitalName}"%"
+            </if>
+            <if test="address != '' and address != null">
+                AND address like "%"#{address}"%"
+            </if>
+               AND del_flag = 0
+        </where>
+        ORDER BY id
+        LIMIT #{pageStart},#{pageSize}
+    </select>
+
+    <!--    添加医院-->
+    <insert id="insertHospital" parameterType="com.work.health.bean.Hospital">
+        INSERT hospital
+        (hospitalName,logo,address,grade,registerTime,createId,createtime,del_flag)
+        VALUES
+        (#{hospitalName},#{logo},#{address},#{grade},#{registerTime},#{createId},current_time,0)
+    </insert>
+
+    <select id="getDepartmentDrop" resultType="com.work.health.bean.Department">
+        SELECT id AS departmentId,departmentName
+        FROM department
+    </select>
+
+    <select id="getHospitalDrop" resultType="com.work.health.bean.Hospital">
+        SELECT id AS hospitalId,hospitalName
+        FROM hospital
+    </select>
+
+    <select id="getDoctorDrop" parameterType="com.work.health.bean.Doctor" resultType="com.work.health.bean.Doctor">
+        SELECT id AS doctorId,doctor
+        FROM doctor
+        WHERE
+            hospitalId = #{hospitalId}
+        AND departmentId = #{departmentId}
+    </select>
+
+    <select id="getHospitalInfo" parameterType="com.work.health.bean.Hospital" resultType="com.work.health.bean.Hospital">
+        SELECT id,hospitalName,address,registerTime
+        FROM hospital
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insertAppointment" parameterType="com.work.health.bean.Appointment">
+        INSERT appointment
+        (appointNo,hospitalName,doctorId,departmentId,appointTime,price,createId,createtime,del_flag)
+        VALUES
+        (#{appointNo},#{hospitalName},#{doctorId},#{departmentId},#{appointTime},#{price},#{createId},current_time,0)
+    </insert>
+
+    <insert id="insertMedical" parameterType="com.work.health.bean.Medical">
+        INSERT medical
+        (businessNo,price,businessType,businessContent,businessOrganization,businessStatus,createTime,createId,del_flag)
+        VALUES
+        (#{businessNo},#{price},#{businessType},#{businessContent},#{businessOrganization},#{businessStatus},current_time,#{createId},0)
+    </insert>
+
+
+    <select id="getMedicalInfo" parameterType="com.work.health.bean.Appointment" resultType="com.work.health.bean.Appointment">
+        SELECT a.appointNo,a.hospitalName,a.doctorId,a.departmentId,a.appointTime,a.price,c.id AS hospitalId,c.address
+        FROM appointment a
+        LEFT JOIN hospital c
+        ON a.hospitalName = c.hospitalName
+        WHERE
+        a.appointNo = #{appointNo}
+    </select>
+
+    <update id="updateAppointment" parameterType="com.work.health.bean.Appointment">
+        UPDATE appointment
+        SET
+            doctorId = #{doctorId},
+            departmentId = #{departmentId},
+            appointTime = #{appointTime},
+            updatetime = current_time,
+        WHERE
+            appointNo = #{appointNo}
+    </update>
+
+    <update id="updateMedical" parameterType="com.work.health.bean.Medical">
+        UPDATE medical
+        SET
+            businessContent = #{businessContent},
+            businessOrganization = #{businessOrganization},
+            createtime = current_time,
+            updatetime = current_time,
+        WHERE businessNo = #{businessNo}
+    </update>
+
+    <update id="updateStatus" parameterType="com.work.health.bean.Medical">
+        UPDATE medical
+            SET
+                businessStatus = #{businessStatus},
+                updatetime = current_time
+            WHERE
+                  businessNo = #{businessNo}
+    </update>
+
+
+</mapper>

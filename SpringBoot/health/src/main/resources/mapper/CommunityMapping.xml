@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.health.dao.CommunityDao">
+    <!--    社区列表查询-->
+    <select id="selectCommunity" parameterType="com.work.health.bean.Community"
+            resultType="com.work.health.bean.Community">
+        SELECT id,community_code AS communityCd,community_name AS communityName,community_place AS
+        communityPlace,community_area AS communityArea,people_number AS peopleNumber,state,updateTime,
+        (
+        SELECT COUNT(*)
+        FROM communities
+        <where>
+            1=1
+            <if test="communityCd != null and communityCd != ''">
+                AND community_code = #{communityCd}
+            </if>
+            AND del_flag = 0
+        </where>
+        ) AS total
+        FROM communities
+        <where>
+            1=1
+            <if test="communityCd != null and communityCd != ''">
+                AND community_code = #{communityCd}
+            </if>
+            AND del_flag = 0
+        </where>
+        ORDER BY id
+        LIMIT #{pageStart},#{pageSize}
+    </select>
+    <!--社区详情-->
+    <select id="getCommunityById" parameterType="com.work.health.bean.Community"
+            resultType="com.work.health.bean.Community">
+        SELECT id,
+               community_code  AS communityCd,
+               community_name  AS communityName,
+               community_place AS communityPlace,
+               community_area  AS communityArea,
+               people_number   AS peopleNumber
+        FROM communities
+        WHERE id = #{id}
+    </select>
+    <!--  删除  -->
+    <update id="deleteCommunity" parameterType="com.work.health.bean.Community">
+        UPDATE communities
+        SET del_flag   = 1,
+            updateTime = current_time
+        WHERE id = #{id}
+    </update>
+
+    <!--    修改-->
+    <update id="updateCommunity" parameterType="com.work.health.bean.Community">
+        UPDATE communities
+        SET community_area = #{communityArea},
+            people_number  = #{peopleNumber},
+            updateTime     = current_time
+        WHERE id = #{id}
+    </update>
+
+    <!--    添加-->
+    <insert id="insertCommunity" parameterType="com.work.health.bean.Community">
+        INSERT
+        communities
+        (community_code,community_name,community_place,community_area,people_number,del_flag,createtime,updateTime)
+        VALUES
+        (
+        #{communityCd},
+        #{communityName},
+        #{communityPlace},
+        #{communityArea},
+        #{peopleNumber},
+        '0',
+        current_time,
+        current_time
+        )
+    </insert>
+
+    <!--    修改状态-->
+    <update id="updateState" parameterType="com.work.health.bean.Community">
+        UPDATE communities
+        SET state      = #{state},
+            updateTime = current_time
+        WHERE id = #{id}
+    </update>
+</mapper>

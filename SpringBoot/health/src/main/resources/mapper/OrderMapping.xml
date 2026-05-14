@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.health.dao.OrderDao">
+    <select id="getOrderList" parameterType="com.work.health.bean.Order" resultType="com.work.health.bean.Order">
+        SELECT DISTINCT
+        a.id,a.goodsId,a.orderNo,a.shopName,a.imgUrl,a.goodsName,a.orderPrice,a.orderNumber,a.orderStatus,a.createtime,a.createId,
+        (SELECT DISTINCT COUNT(a.id)
+        FROM `order` a
+        LEFT JOIN order_customer b
+        ON a.orderNo = b.orderNo
+        <where> 1=1
+            <if test="orderNo != null and orderNo != ''">
+                AND b.orderNo = a.orderNo
+                AND a.orderNo like "%"#{orderNo}"%"
+            </if>
+            <if test="(orderNo == null or orderNo == '') and (role == null or role != '管理员')">
+                AND a.orderNo = b.orderNo
+                AND b.userId = #{userId}
+            </if>
+            AND a.del_flag = 0
+        </where>
+        ) AS total
+        FROM `order` a
+        LEFT JOIN order_customer b
+        ON a.orderNo = b.orderNo
+        <where> 1=1
+            <if test="orderNo != null and orderNo != ''">
+                AND b.orderNo = a.orderNo
+                AND a.orderNo like "%"#{orderNo}"%"
+            </if>
+            <if test="(orderNo == null or orderNo == '') and (role == null or role != '管理员')">
+                AND a.orderNo = b.orderNo
+                AND b.userId = #{userId}
+            </if>
+            AND a.del_flag = 0
+        </where>
+        ORDER BY a.id
+        LIMIT #{pageStart},#{pageSize}
+    </select>
+
+    <update id="deleteById" parameterType="com.work.health.bean.Order">
+        UPDATE `order`
+        SET del_flag   = 1,
+            updatetime = current_time,
+            updateId   = #{updateId}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteCustomer" parameterType="com.work.health.bean.Order">
+        DELETE
+        FROM order_customer
+        WHERE orderNo = #{orderNo}
+          AND userId = #{userId}
+          AND orderCustomer = #{orderCustomer}
+    </delete>
+
+    <select id="getCustomerList" parameterType="com.work.health.bean.Customer" resultType="com.work.health.bean.Customer">
+        SELECT id, orderNo, userId, orderCustomer, orderTime
+        FROM order_customer
+        WHERE orderNo = #{orderNo}
+    </select>
+
+    <insert id="insertOrders" parameterType="com.work.health.bean.Order">
+        INSERT
+        `order`
+        (orderNO,goodsId,shopName,goodsName,imgUrl,orderPrice,orderNumber,orderStatus,createId,createtime,del_flag)
+        VALUES
+        (
+        #{orderNo},
+        #{goodsId},
+        #{shopName},
+        #{goodsName},
+        #{imgUrl},
+        #{orderPrice},
+        #{number},
+        #{orderStatus},
+        #{createId},
+        current_time,
+        0
+        )
+    </insert>
+
+    <insert id="insertCustomer" parameterType="com.work.health.bean.Customer">
+        INSERT
+        order_customer
+        (orderNo,userId,orderCustomer,number,orderTime)
+        VALUES
+        (
+        #{orderNo},
+        #{userId},
+        #{orderCustomer},
+        #{number},
+        current_time
+        )
+    </insert>
+
+    <update id="updateShopNumber" parameterType="com.work.health.bean.Order">
+        update shop_mall
+        SET stock = stock - #{orderNumber}
+        WHERE id = #{goodsId}
+    </update>
+
+    <update id="updateOrderNumber" parameterType="com.work.health.bean.Order">
+        update `order`
+        SET orderNumber = orderNumber + #{number}
+        WHERE goodsId = #{goodsId}
+          AND orderNo = #{orderNo}
+
+    </update>
+
+    <update id="updateStatus" parameterType="com.work.health.bean.Order">
+        UPDATE `order`
+        SET orderStatus = #{orderStatus}
+        WHERE orderNo = #{orderNo}
+    </update>
+</mapper>

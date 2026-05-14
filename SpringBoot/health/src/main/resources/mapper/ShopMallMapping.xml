@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.work.health.dao.ShopMallDao">
+    <select id="getGoodsList" parameterType="com.work.health.bean.ShopMall" resultType="com.work.health.bean.ShopMall">
+        SELECT id,goodsName,goodsUnit,goodsPrice,shopName,qualityGuarantee,stock,goodsImgUrl,
+               (SELECT
+                    COUNT(*)
+                FROM shop_mall
+                <where>
+                    1 = 1
+                    <if test="goodsName != null and goodsName != ''">
+                        AND goodsName like "%"#{goodsName}"%"
+                    </if>
+                    <if test="shopName != null and shopName != ''">
+                        AND shopName like "%"#{shopName}"%"
+                    </if>
+                    AND del_flag = 0
+                </where>) AS total
+        FROM shop_mall
+        <where>
+            1 = 1
+            <if test="goodsName != null and goodsName != ''">
+                AND goodsName like "%"#{goodsName}"%"
+            </if>
+            <if test="shopName != null and shopName != ''">
+                AND shopName like "%"#{shopName}"%"
+            </if>
+                AND del_flag = 0
+        </where>
+        ORDER BY Id
+        LIMIT #{pageStart},#{pageSize}
+    </select>
+    <insert id="addGoods" parameterType="com.work.health.bean.ShopMall">
+        INSERT shop_mall
+        (goodsName,goodsImgUrl,goodsPrice,goodsUnit,shopName,qualityGuarantee,stock,del_flag,createId,createtime)
+        VALUES
+        (#{goodsName},#{goodsImgUrl},#{goodsPrice},#{goodsUnit},#{shopName},#{qualityGuarantee},#{stock},0,#{createId},current_time)
+    </insert>
+
+    <update id="deleteGoodsById" parameterType="com.work.health.bean.ShopMall">
+        UPDATE shop_mall
+            SET
+                del_flag = 1,
+                updateId = #{updateId},
+                updatetime = current_time
+            WHERE
+                id = #{id}
+    </update>
+</mapper>
